@@ -4,15 +4,15 @@ import Vuex from 'vuex';
 const state = {
   responses: [
     {
-      option: 'Good',
+      option: 'yes',
       numResponses: 0,
     },
     {
-      option: 'Bad',
+      option: 'somewhat',
       numResponses: 0,
     },
     {
-      option: 'Worse Than Bad',
+      option: 'no',
       numResponses: 0,
     },
   ],

@@ -1,10 +1,8 @@
 <template>
   <div class="page-layout animated fadeIn">
     <div class="page-contents">
-      <h3 id="ajax-test">This text lives on the front end.</h3>
-      <button v-on:click="ajaxCall()">Ajax Call to Update the Above Text</button>
-      <h2 v-if="pieData.length === 0">Click review and tell me what you think of this site.</h2>
-      <h2 v-if="pieData.length > 0">Here's what you think of this site:</h2>
+      <h2 v-if="pieData.length === 0">Click some answers on the review and return to dashboard.</h2>
+      <h2 v-if="pieData.length > 0">Simple pie chart recap of your review:</h2>
       <div class="pie-chart"></div>
     </div>
   </div>
@@ -77,18 +75,6 @@ export default {
     if (pieGraph) pieGraph.parentNode.removeChild(pieGraph);
   },
   methods: {
-    ajaxCall() {
-      this.$axios
-        .get('/ajax', {})
-        .then((response) => {
-          // console.log(response);
-          document.getElementById('ajax-test').innerText = response.data.message;
-          document.getElementById('ajax-test').style.color = 'red';
-        })
-        .catch((error) => {
-          // console.log(error);
-        });
-    },
   },
 };
 </script>

@@ -21,6 +21,10 @@ body {
   grid-column-start: 2;
 }
 
+.page-contents-row {
+  flex-direction: row;
+}
+
 .page-contents > * {
   margin-top: 10px;
 }
@@ -32,6 +36,10 @@ body {
 
 .radio-button-form > * {
   margin-top: 5px;
+}
+
+.currentTab {
+  background-color: white;
 }
 
 // * { border: 1px solid red; }

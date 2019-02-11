@@ -44,6 +44,8 @@ router.beforeEach((to, from, next) => {
         path: '/',
         params: { nextUrl: to.fullPath },
       });
+    } else {
+      null;
     }
   }
   next();

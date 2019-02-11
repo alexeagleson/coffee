@@ -44,6 +44,11 @@ export default {
       error: '',
     };
   },
+  mounted() {
+    if(localStorage.getItem('dealer20user')) {
+      this.$router.push('/dashboard');
+    }
+  },
   methods: {
     handleSubmit(e) {
       e.preventDefault();

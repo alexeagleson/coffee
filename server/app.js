@@ -17,15 +17,17 @@ const app = express();
 const distPath = path.join(__dirname, '..', 'dist');
 const port = process.env.PORT;
 
+const course = require('./content/course');
+
 app.use(express.static(distPath));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(allowCrossDomain);
 app.use(history());
 
-app.get('/ajax', (req, res) => {
+app.get('/course', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
-  res.send({ message: 'This text came from the server!' });
+  res.send(course);
 });
 
 app.get('/*', (req, res) => {

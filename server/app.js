@@ -17,7 +17,7 @@ const app = express();
 const distPath = path.join(__dirname, '..', 'dist');
 const port = process.env.PORT;
 
-const course = require('./content/course');
+const review = require('./content/review');
 
 app.use(express.static(distPath));
 app.use(bodyParser.json());
@@ -25,9 +25,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(allowCrossDomain);
 app.use(history());
 
-app.get('/course', (req, res) => {
+app.get('/review', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
-  res.send(course);
+  res.send(review);
 });
 
 app.get('/*', (req, res) => {

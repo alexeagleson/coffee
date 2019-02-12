@@ -2,8 +2,30 @@
   <div class="page-layout animated fadeIn">
     <div class="page-contents">
       <h2 v-if="pieData.length === 0">Click some answers on the review and return to dashboard.</h2>
-      <h2 v-if="pieData.length > 0">Simple pie chart recap of your review:</h2>
       <div class="pie-chart"></div>
+      <table>
+        <tr>
+          <th>vendorID</th>
+          <th>reviewID</th>
+          <th>questionID</th>
+          <th>answer</th>
+          <th>commentEnglish</th>
+        </tr>
+        <template v-for="(vendor) in vendors">
+          <template v-for="(review) in vendor.reviews">
+            <tr
+              v-for="(answer) in review.reviewContents.answers"
+              v-bind:key="`${review.reviewID}${answer.questionID}`"
+            >
+              <td>{{vendor.vendorID}}</td>
+              <td>{{review.reviewID}}</td>
+              <td>{{answer.questionID}}</td>
+              <td>{{answer.answer}}</td>
+              <td>{{answer.commentEnglish}}</td>
+            </tr>
+          </template>
+        </template>
+      </table>
     </div>
   </div>
 </template>
@@ -12,9 +34,8 @@
 export default {
   data() {
     return {
-      answers: this.$store.getters.getAnswers,
-      responses: this.$store.getters.getResponses,
       pieData: [],
+      vendors: this.$store.getters.getVendors,
     };
   },
   mounted() {
@@ -23,18 +44,22 @@ export default {
     var radius = 200;
     var colors = d3.scale.category20();
 
-    this.pieData = this.responses.map(response => {
-      return { option: `${response.option} (${response.numResponses})`, numResponses: response.numResponses };
-    });
-
-    this.pieData = this.pieData.filter(response => response.numResponses > 0);
+    const yesReducer = (accumulator, currentValue) => currentValue.answer === 'yes' ? accumulator + 1 : accumulator;
+    const somewhatReducer = (accumulator, currentValue) => currentValue.answer === 'somewhat' ? accumulator + 1 : accumulator;
+    const noReducer = (accumulator, currentValue) => currentValue.answer === 'no' ? accumulator + 1 : accumulator;
+    
+    this.pieData = [
+      { option: 'yes', numResponses: this.vendors[0].reviews[0].reviewContents.answers.reduce(yesReducer, 0) },
+      { option: 'somewhat', numResponses: this.vendors[0].reviews[0].reviewContents.answers.reduce(somewhatReducer, 0) },
+      { option: 'no', numResponses: this.vendors[0].reviews[0].reviewContents.answers.reduce(noReducer, 0) },
+    ];
+    this.pieData = this.pieData.filter(data => data.numResponses > 0);
 
     var pie = d3.layout.pie().value(function(d) {
       return d.numResponses;
     });
 
     var arc = d3.svg.arc().outerRadius(radius);
-
     var chart = d3
       .select('.pie-chart')
       .append('svg')
@@ -47,7 +72,6 @@ export default {
       .enter()
       .append('g')
       .attr('class', 'slice');
-
     var slices = d3
       .selectAll('g.slice')
       .append('path')
@@ -55,7 +79,6 @@ export default {
         return colors(i);
       })
       .attr('d', arc);
-
     var text = d3
       .selectAll('g.slice')
       .append('text')
@@ -74,8 +97,7 @@ export default {
     const pieGraph = document.getElementsByTagName('svg')[0];
     if (pieGraph) pieGraph.parentNode.removeChild(pieGraph);
   },
-  methods: {
-  },
+  methods: {},
 };
 </script>
 

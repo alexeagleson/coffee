@@ -2,78 +2,69 @@
   <div class="page-layout animated fadeIn">
     <div
       class="page-contents"
-      v-if="courseLoaded"
+      v-if="reviewLoaded"
     >
       <div class="page-contents-row">
         <button
-          v-bind:class="{ currentTab: question.number === currentQuestion }"
-          v-on:click="changeQuestion(`${question.number}`)"
-          v-for="(question) in course.questions"
-          v-bind:key="`${question.number}`"
-        >{{question.number}} </button>
+          v-bind:class="{ currentTab: question.questionID === currentQuestion }"
+          v-on:click="changeQuestion(`${question.questionID}`)"
+          v-for="(question) in review.questions"
+          v-bind:key="`${question.questionID}`"
+        >{{question.questionID}} </button>
       </div>
       <Question
-        v-if="questionMode"
-        v-bind:questionText="getQuestion(currentQuestion).questionText"
-        v-bind:answers="getQuestion(currentQuestion).answers"
-        v-on:answer-selected="toggleQuestionComment($event)"
-      />
-      <Comment
-        v-if="!questionMode"
-        v-bind:comments="getQuestion(currentQuestion).comments"
-        v-bind:questionResponse="questionResponse"
-        v-on:feedback-selected="nextQuestion()"
+        v-bind:question="getQuestion(currentQuestion)"
+        v-on:question-complete="questionComplete($event)"
       />
     </div>
   </div>
 </template>
 
 <script>
-import Comment from './subcomponents/Comment.vue';
 import Question from './subcomponents/Question.vue';
 
 export default {
   data() {
     return {
-      course: {},
-      courseLoaded: false,
-      questionMode: true,
-      questionResponse: null,
+      review: {},
+      reviewLoaded: false,
       currentQuestion: 1,
+      vendorID: 123456,
+      reviewID: 123456,
     };
   },
   methods: {
-    toggleQuestionComment(questionResponse) {
-      this.questionMode = !this.questionMode;
-      this.questionResponse = questionResponse;
-      this.$store.dispatch('addResponse', questionResponse);
+    changeQuestion(questionID) {
+      this.currentQuestion = parseInt(questionID);
     },
-    changeQuestion(questionNumber) {
-      this.questionMode = true;
-      this.currentQuestion = parseInt(questionNumber);
-    },
-    nextQuestion(questionResponse) {
-      this.questionMode = true;
+    questionComplete(answerAndFeedback) {
+      const completeAnswer = {
+        questionID: this.currentQuestion,
+        screenshots: [],
+        answer: answerAndFeedback.answer,
+        commentEnglish: answerAndFeedback.feedback,
+        commentFrench: 'french not implemented yet',
+      };
+
+      this.$store.dispatch('updateAnswer', { vendorID: this.vendorID, reviewID: this.reviewID, completeAnswer: completeAnswer });
       this.currentQuestion += 1;
     },
-    getQuestion(questionNumber) {
-      return this.course.questions.find(question => question.number === questionNumber);
-    }
+    getQuestion(questionID) {
+      return this.review.questions.find(question => question.questionID === questionID);
+    },
   },
   mounted() {
     this.$axios
-      .get('/course', {})
+      .get('/review', {})
       .then(response => {
-        this.course = response.data.course;
-        console.log(this.course)
-        this.courseLoaded = true;
+        this.review = response.data.review;
+        this.reviewLoaded = true;
       })
       .catch(error => {
         console.log(error);
       });
   },
   components: {
-    Comment,
     Question,
   },
 };

@@ -2,42 +2,74 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 
 const state = {
-  responses: [
+  vendors: [
     {
-      option: 'yes',
-      numResponses: 0,
-    },
-    {
-      option: 'somewhat',
-      numResponses: 0,
-    },
-    {
-      option: 'no',
-      numResponses: 0,
+      vendorID: 123456,
+      reviews: [
+        {
+          reviewID: 123456,
+          reviewContents: {
+            dateCreated: 'date',
+            dateLastEdited: 'date',
+            userLastEdited: 'username',
+            answers: [
+              // {
+              //   questionID: 1,
+              //   screenshots: [],
+              //   answer: 'text',
+              //   commentEnglish: 'text',
+              //   commentFrench: 'text',
+              // },
+            ],
+          },
+        },
+      ],
     },
   ],
 };
 
 const mutations = {
-  ADD_RESPONSE(state, payload) {
-    state.responses.forEach((response, index) => {
-      if (response.option === payload) {
-        const updatedResponse = { option: payload, numResponses: response.numResponses + 1 };
-        Vue.set(state.responses, index, updatedResponse);
+  UPDATE_ANSWER(state, payload) {
+    const vendorMatch = state.vendors.find(vendor => vendor.vendorID === payload.vendorID);
+
+    if (vendorMatch) {
+      const reviewMatch = vendorMatch.reviews.find(review => review.reviewID === payload.reviewID);
+
+      if (reviewMatch) {
+        const answerMatch = reviewMatch.reviewContents.answers.find(answer => answer.questionID === payload.completeAnswer.questionID);
+
+        if (answerMatch) {
+          Object.assign(answerMatch, payload.completeAnswer);
+        } else {
+          reviewMatch.reviewContents.answers.push(payload.completeAnswer);
+        }
+      } else {
+        alert('debug need to add new review');
       }
-    });
+    } else {
+      alert('debug need to add new vendor');
+    }
+
+    console.log(state.vendors);
+
+    // state.responses.forEach((response, index) => {
+    //   if (response.option === payload) {
+    //     const updatedResponse = { option: payload, numResponses: response.numResponses + 1 };
+    //     Vue.set(state.responses, index, updatedResponse);
+    //   }
+    // });
   },
 };
 
 const actions = {
-  addResponse(context, payload) {
-    context.commit('ADD_RESPONSE', payload);
+  updateAnswer(context, payload) {
+    context.commit('UPDATE_ANSWER', payload);
   },
 };
 
 const getters = {
-  getResponses(state) {
-    return state.responses;
+  getVendors(state) {
+    return state.vendors;
   },
 };
 

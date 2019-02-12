@@ -1,10 +1,10 @@
 
-const course = {
+const review = {
     questions: [
         {
-            number: 1,
+            questionID: 1,
             questionText: "Does the dealer site follow the recommended information architecture (sitemap) as per Centre of Excellence standards?",
-            answers: ['yes', 'somewhat', 'no'],
+            answerOptions: ['yes', 'somewhat', 'no'],
             threshold: '4 OR LESS ERRORS = SOMEWHAT, MORE THAN 5 ERRORS = NO',
             screenshotRequired: true,
             comments: [
@@ -26,9 +26,9 @@ const course = {
             ]
         },
         {
-            number: 2,
+            questionID: 2,
             questionText: "Are best practices for labeling menu items, including the correct language & terminology being followed for both English and French (where applicable)?",
-            answers: ['yes', 'somewhat', 'no'],
+            answerOptions: ['yes', 'somewhat', 'no'],
             threshold: '4 OR LESS ERRORS = SOMEWHAT, 5 OR MORE ERRORS = NO',
             screenshotRequired: true,
             comments: [
@@ -45,9 +45,9 @@ const course = {
             ]
         },
         {
-            number: 3,
+            questionID: 3,
             questionText: "Does the main dealer site navigation and associated drop-downs consist of no more than 7 items?",
-            answers: ['yes', 'somewhat', 'no'],
+            answerOptions: ['yes', 'somewhat', 'no'],
             threshold: 'IF ONE DROP-DOWN SECTION ERROR = SOMEWHAT, IF MAIN NAVIGATION OR 2 OR MORE DROP-DOWNS = NO',
             screenshotRequired: true,
             comments: [
@@ -63,7 +63,15 @@ const course = {
                 },
             ]
         },
+        {
+            questionID: 4,
+            questionText: "end of questions",
+            answerOptions: [],
+            threshold: 'IF ONE DROP-DOWN SECTION ERROR = SOMEWHAT, IF MAIN NAVIGATION OR 2 OR MORE DROP-DOWNS = NO',
+            screenshotRequired: true,
+            comments: []
+        },
     ],
 };
 
-module.exports = { course };
+module.exports = { review };

@@ -39,9 +39,6 @@
           v-model="editedFeedback"
         ></textarea>
       </div>
-      <button v-on:click="$emit('question-complete', submitAnswer())">
-        SUBMIT
-      </button>
     </template>
 
   </div>
@@ -49,37 +46,62 @@
 
 <script>
 export default {
-  props: ['question'],
+  props: ['question', 'currentQuestion', 'vendorID', 'reviewID'],
   name: 'Question',
   data() {
     return {
       chosenAnswer: '',
       chosenFeedback: '',
       editedFeedback: '',
+      answerUpdated: false,
     };
   },
   methods: {
     caps(anyText) {
       return anyText.charAt(0).toUpperCase() + anyText.slice(1);
     },
-    submitAnswer() {
-      const answer = this.chosenAnswer;
-      const feedback = this.editedFeedback;
-      this.chosenAnswer = '';
-      this.chosenFeedback = '';
-      this.editedFeedback = '';
-      return { answer, feedback };
+    saveToStore() {
+      this.$emit('save-question', {
+        questionID: this.question.questionID,
+        answer: this.chosenAnswer,
+        feedback: this.editedFeedback,
+      });
     },
   },
   watch: {
     chosenAnswer: function() {
       this.chosenFeedback = '';
+      this.answerUpdated = true;
     },
     chosenFeedback: function() {
       this.editedFeedback = this.chosenFeedback;
+      this.answerUpdated = true;
+    },
+    editedFeedback: function() {
+      this.answerUpdated = true;
+    },
+    currentQuestion: function() {
+      if (this.answerUpdated) {
+        this.saveToStore();
+        this.answerUpdated = false;
+      }
     },
   },
-  mounted() {},
+  mounted() {
+    const previousAnswer = this.$store.getters.getPreviousAnswer({
+      vendorID: this.vendorID,
+      reviewID: this.reviewID,
+      questionID: this.question.questionID,
+    });
+
+    if (previousAnswer) {
+      this.chosenAnswer = previousAnswer.answer;
+      this.editedFeedback = previousAnswer.commentEnglish;
+    }
+  },
+  beforeDestroy() {
+    if (this.answerUpdated) this.saveToStore();
+  }
 };
 </script>
 

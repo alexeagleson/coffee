@@ -25,6 +25,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(allowCrossDomain);
 app.use(history());
 
+app.post('/submit-update', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  const completeCount = req.body.vendors[0].reviews[0].reviewContents.answers.length;
+  const response = {  message: `Server successfully acknowledges receipt of ${completeCount} completed questions.`}
+  res.send(response);
+});
+
+
 app.get('/review', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(review);

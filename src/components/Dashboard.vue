@@ -26,6 +26,8 @@
           </template>
         </template>
       </table>
+      <button v-on:click="saveToDatabase()">Save</button>
+      <h2>{{responseFromServer}}</h2>
     </div>
   </div>
 </template>
@@ -36,7 +38,13 @@ export default {
     return {
       pieData: [],
       vendors: this.$store.getters.getVendors,
+      responseFromServer: '',
     };
+  },
+  methods: {
+    async saveToDatabase() {
+      this.responseFromServer = await this.$store.dispatch('saveToDatabase');
+    },
   },
   mounted() {
     var width = 400;
@@ -44,13 +52,17 @@ export default {
     var radius = 200;
     var colors = d3.scale.category20();
 
-    const yesReducer = (accumulator, currentValue) => currentValue.answer === 'yes' ? accumulator + 1 : accumulator;
-    const somewhatReducer = (accumulator, currentValue) => currentValue.answer === 'somewhat' ? accumulator + 1 : accumulator;
-    const noReducer = (accumulator, currentValue) => currentValue.answer === 'no' ? accumulator + 1 : accumulator;
-    
+    const yesReducer = (accumulator, currentValue) => (currentValue.answer === 'yes' ? accumulator + 1 : accumulator);
+    const somewhatReducer = (accumulator, currentValue) =>
+      currentValue.answer === 'somewhat' ? accumulator + 1 : accumulator;
+    const noReducer = (accumulator, currentValue) => (currentValue.answer === 'no' ? accumulator + 1 : accumulator);
+
     this.pieData = [
       { option: 'yes', numResponses: this.vendors[0].reviews[0].reviewContents.answers.reduce(yesReducer, 0) },
-      { option: 'somewhat', numResponses: this.vendors[0].reviews[0].reviewContents.answers.reduce(somewhatReducer, 0) },
+      {
+        option: 'somewhat',
+        numResponses: this.vendors[0].reviews[0].reviewContents.answers.reduce(somewhatReducer, 0),
+      },
       { option: 'no', numResponses: this.vendors[0].reviews[0].reviewContents.answers.reduce(noReducer, 0) },
     ];
     this.pieData = this.pieData.filter(data => data.numResponses > 0);
@@ -97,7 +109,6 @@ export default {
     const pieGraph = document.getElementsByTagName('svg')[0];
     if (pieGraph) pieGraph.parentNode.removeChild(pieGraph);
   },
-  methods: {},
 };
 </script>
 

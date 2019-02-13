@@ -12,10 +12,17 @@
           v-bind:key="`${question.questionID}`"
         >{{question.questionID}} </button>
       </div>
-      <Question
-        v-bind:question="getQuestion(currentQuestion)"
-        v-on:question-complete="questionComplete($event)"
-      />
+      <template v-for="(question) in review.questions">
+        <Question
+          v-show="question.questionID === currentQuestion"
+          v-bind:key="question.questionID"
+          v-bind:question="question"
+          v-bind:currentQuestion="currentQuestion"
+          v-bind:vendorID="vendorID"
+          v-bind:reviewID="reviewID"
+          v-on:save-question="saveQuestion($event)"
+        />
+      </template>
     </div>
   </div>
 </template>
@@ -37,17 +44,20 @@ export default {
     changeQuestion(questionID) {
       this.currentQuestion = parseInt(questionID);
     },
-    questionComplete(answerAndFeedback) {
+    saveQuestion(emittedResponse) {
       const completeAnswer = {
-        questionID: this.currentQuestion,
+        questionID: emittedResponse.questionID,
         screenshots: [],
-        answer: answerAndFeedback.answer,
-        commentEnglish: answerAndFeedback.feedback,
+        answer: emittedResponse.answer,
+        commentEnglish: emittedResponse.feedback,
         commentFrench: 'french not implemented yet',
       };
 
-      this.$store.dispatch('updateAnswer', { vendorID: this.vendorID, reviewID: this.reviewID, completeAnswer: completeAnswer });
-      this.currentQuestion += 1;
+      this.$store.dispatch('updateAnswer', {
+        vendorID: this.vendorID,
+        reviewID: this.reviewID,
+        completeAnswer: completeAnswer,
+      });
     },
     getQuestion(questionID) {
       return this.review.questions.find(question => question.questionID === questionID);

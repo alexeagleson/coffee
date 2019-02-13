@@ -4,6 +4,7 @@ import Dashboard from '@/components/Dashboard';
 import Review from '@/components/Review';
 import Logout from '@/components/Logout';
 import Login from '@/components/Login';
+import Summary from '@/components/Summary';
 
 let router = new Router({
   mode: 'history',
@@ -30,6 +31,14 @@ let router = new Router({
       path: '/review',
       name: 'review',
       component: Review,
+      meta: {
+        requiresUser: true,
+      },
+    },
+    {
+      path: '/summary',
+      name: 'summary',
+      component: Summary,
       meta: {
         requiresUser: true,
       },

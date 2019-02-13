@@ -46,7 +46,7 @@
 
 <script>
 export default {
-  props: ['question', 'currentQuestion', 'vendorID', 'reviewID'],
+  props: ['question', 'currentQuestion', 'vendorID', 'reviewPeriod'],
   name: 'Question',
   data() {
     return {
@@ -67,6 +67,21 @@ export default {
         feedback: this.editedFeedback,
       });
     },
+    updatePreviousQuestion() {
+      const previousAnswer = this.$store.getters.getPreviousAnswer({
+        vendorID: this.vendorID,
+        reviewPeriod: this.reviewPeriod,
+        questionID: this.question.questionID,
+      });
+
+      if (previousAnswer) {
+        this.chosenAnswer = previousAnswer.answer;
+        this.editedFeedback = previousAnswer.commentEnglish;
+      } else {
+        this.chosenAnswer = '';
+        this.editedFeedback = '';
+      }
+    },
   },
   watch: {
     chosenAnswer: function() {
@@ -86,22 +101,19 @@ export default {
         this.answerUpdated = false;
       }
     },
+    vendorID: function() {
+      this.updatePreviousQuestion();
+    },
+    reviewPeriod: function() {
+      this.updatePreviousQuestion();
+    },
   },
   mounted() {
-    const previousAnswer = this.$store.getters.getPreviousAnswer({
-      vendorID: this.vendorID,
-      reviewID: this.reviewID,
-      questionID: this.question.questionID,
-    });
-
-    if (previousAnswer) {
-      this.chosenAnswer = previousAnswer.answer;
-      this.editedFeedback = previousAnswer.commentEnglish;
-    }
+    this.updatePreviousQuestion();
   },
   beforeDestroy() {
     if (this.answerUpdated) this.saveToStore();
-  }
+  },
 };
 </script>
 

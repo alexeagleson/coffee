@@ -6,19 +6,19 @@
       <table>
         <tr>
           <th>vendorID</th>
-          <th>reviewID</th>
+          <th>reviewPeriod</th>
           <th>questionID</th>
           <th>answer</th>
           <th>commentEnglish</th>
         </tr>
-        <template v-for="(vendor) in vendors">
-          <template v-for="(review) in vendor.reviews">
+        <template v-for="(reviewGroup) in allReviews">
+          <template v-for="(review) in reviewGroup.reviews">
             <tr
-              v-for="(answer) in review.reviewContents.answers"
-              v-bind:key="`${review.reviewID}${answer.questionID}`"
+              v-for="(answer) in review.answers"
+              v-bind:key="`dashboard${review.reviewPeriod}${answer.questionID}`"
             >
-              <td>{{vendor.vendorID}}</td>
-              <td>{{review.reviewID}}</td>
+              <td>{{reviewGroup.vendorID}}</td>
+              <td>{{review.reviewPeriod}}</td>
               <td>{{answer.questionID}}</td>
               <td>{{answer.answer}}</td>
               <td>{{answer.commentEnglish}}</td>
@@ -37,7 +37,7 @@ export default {
   data() {
     return {
       pieData: [],
-      vendors: this.$store.getters.getVendors,
+      allReviews: this.$store.getters.getAllReviews,
       responseFromServer: '',
     };
   },
@@ -47,6 +47,8 @@ export default {
     },
   },
   mounted() {
+
+    // D3 stuff
     var width = 400;
     var height = 400;
     var radius = 200;
@@ -58,12 +60,12 @@ export default {
     const noReducer = (accumulator, currentValue) => (currentValue.answer === 'no' ? accumulator + 1 : accumulator);
 
     this.pieData = [
-      { option: 'yes', numResponses: this.vendors[0].reviews[0].reviewContents.answers.reduce(yesReducer, 0) },
+      { option: 'yes', numResponses: this.allReviews[0].reviews[0].answers.reduce(yesReducer, 0) },
       {
         option: 'somewhat',
-        numResponses: this.vendors[0].reviews[0].reviewContents.answers.reduce(somewhatReducer, 0),
+        numResponses: this.allReviews[0].reviews[0].answers.reduce(somewhatReducer, 0),
       },
-      { option: 'no', numResponses: this.vendors[0].reviews[0].reviewContents.answers.reduce(noReducer, 0) },
+      { option: 'no', numResponses: this.allReviews[0].reviews[0].answers.reduce(noReducer, 0) },
     ];
     this.pieData = this.pieData.filter(data => data.numResponses > 0);
 

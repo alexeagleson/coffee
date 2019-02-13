@@ -5,65 +5,73 @@ import axios from 'axios';
 Vue.use(Vuex);
 
 const storeHelpers = {
-  getVendorByID(state, vendorID) {
-    return state.vendors.find(vendor => vendor.vendorID === vendorID);
-  },
-  getReviewByID(vendor, reviewID) {
-    return vendor.reviews.find(review => review.reviewID === reviewID);
+  getVendorReviewsByID(state, vendorID) {
+    return state.allReviews.find(reviewGroup => reviewGroup.vendorID === vendorID);
   },
   getAnswerByID(review, questionID) {
-    return review.reviewContents.answers.find(answer => answer.questionID === questionID);
+    return review.answers.find(answer => answer.questionID === questionID);
   },
+  getReviewByPeriod(reviewGroup, reviewPeriod) {
+    return reviewGroup.reviews.find(review => review.reviewPeriod === reviewPeriod);
+  },
+};
+
+const newVendor = config => {
+  return {
+    vendorID: config.vendorID,
+    reviews: [],
+  };
+};
+
+const newReview = config => {
+  return {
+    reviewID: 999999,
+    reviewPeriod: config.reviewPeriod,
+    dateCreated: 'date',
+    dateLastEdited: 'date',
+    userLastEdited: 'username',
+    answers: [],
+  };
+};
+
+const newAnswer = config => {
+  return {
+    questionID: config.questionID,
+    screenshots: config.screenshots,
+    answer: config.answer,
+    commentEnglish: config.commentEnglish,
+    commentFrench: config.commentFrench,
+  };
 };
 
 const store = new Vuex.Store({
   state: {
-    vendors: [
-      {
-        vendorID: 123456,
-        reviews: [
-          {
-            reviewID: 123456,
-            reviewContents: {
-              dateCreated: 'date',
-              dateLastEdited: 'date',
-              userLastEdited: 'username',
-              answers: [
-                // {
-                //   questionID: 1,
-                //   screenshots: [],
-                //   answer: 'text',
-                //   commentEnglish: 'text',
-                //   commentFrench: 'text',
-                // },
-              ],
-            },
-          },
-        ],
-      },
-    ],
+    allReviews: [],
+    allVendors: [],
+    reviewPeriods: [],
   },
 
   mutations: {
     UPDATE_ANSWER(state, payload) {
-      const vendor = storeHelpers.getVendorByID(state, payload.vendorID);
+      let reviewGroup = storeHelpers.getVendorReviewsByID(state, payload.vendorID);
 
-      if (vendor) {
-        const review = storeHelpers.getReviewByID(vendor, payload.reviewID);
+      if (!reviewGroup) {
+        reviewGroup = newVendor({ vendorID: payload.vendorID });
+        state.allReviews.push(reviewGroup);
+      }
 
-        if (review) {
-          const answer = storeHelpers.getAnswerByID(review, payload.completeAnswer.questionID);
+      let review = storeHelpers.getReviewByPeriod(reviewGroup, payload.reviewPeriod);
+      if (!review) {
+        review = newReview({ reviewPeriod: payload.reviewPeriod });
+        reviewGroup.reviews.push(review);
+      }
 
-          if (answer) {
-            Object.assign(answer, payload.completeAnswer);
-          } else {
-            review.reviewContents.answers.push(payload.completeAnswer);
-          }
-        } else {
-          alert('debug need to add new review');
-        }
+      const answer = storeHelpers.getAnswerByID(review, payload.completeAnswer.questionID);
+
+      if (answer) {
+        Object.assign(answer, payload.completeAnswer);
       } else {
-        alert('debug need to add new vendor');
+        review.answers.push(newAnswer(payload.completeAnswer));
       }
     },
   },
@@ -72,7 +80,7 @@ const store = new Vuex.Store({
     updateAnswer(context, payload) {
       context.commit('UPDATE_ANSWER', payload);
     },
-    saveToDatabase(context) {
+    async saveToDatabase(context) {
       return axios
         .post('/submit-update', context.state)
         .then(response => {
@@ -82,16 +90,51 @@ const store = new Vuex.Store({
           return error;
         });
     },
+    async populateAllVendors(context) {
+      if (context.state.allVendors.length > 0) return;
+      return axios
+        .get('/vendor-list', {})
+        .then(response => {
+          context.state.allVendors = response.data.allVendors;
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    async populatereviewPeriods(context) {
+      if (context.state.reviewPeriods.length > 0) return;
+      return axios
+        .get('/review-dates', {})
+        .then(response => {
+          context.state.reviewPeriods = response.data.reviewPeriods;
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
   },
 
   getters: {
-    getVendors(state) {
-      return state.vendors;
+    getAllReviews(state) {
+      return state.allReviews;
+    },
+    getAllVendors(state) {
+      return state.allVendors;
+    },
+    getreviewPeriods(state) {
+      return state.reviewPeriods;
+    },
+    getReviewByPeriod: state => IDs => {
+      const reviewGroup = storeHelpers.getVendorReviewsByID(state, IDs.vendorID);
+      if (!reviewGroup) return false;
+      const review = storeHelpers.getReviewByPeriod(reviewGroup, IDs.reviewPeriod);
+      if (!review) return false;
+      return review;
     },
     getPreviousAnswer: state => IDs => {
-      const vendor = storeHelpers.getVendorByID(state, IDs.vendorID);
-      if (!vendor) return false;
-      const review = storeHelpers.getReviewByID(vendor, IDs.reviewID);
+      const reviewGroup = storeHelpers.getVendorReviewsByID(state, IDs.vendorID);
+      if (!reviewGroup) return false;
+      const review = storeHelpers.getReviewByPeriod(reviewGroup, IDs.reviewPeriod);
       if (!review) return false;
       const answer = storeHelpers.getAnswerByID(review, IDs.questionID);
       if (!answer) return false;
@@ -99,5 +142,10 @@ const store = new Vuex.Store({
     },
   },
 });
+
+const testVendor = newVendor({ vendorID: 74004 });
+const testReview = newReview({ reviewPeriod: 'November 2018' });
+testVendor.reviews.push(testReview);
+store.state.allReviews.push(testVendor);
 
 export default store;

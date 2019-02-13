@@ -4,6 +4,25 @@
       class="page-contents"
       v-if="reviewLoaded"
     >
+      <select v-model="selectedVendorID">
+        <option
+          v-for="(vendor) in allVendors"
+          v-bind:key="vendor.vendorID"
+          v-bind:value="vendor.vendorID"
+        >
+          {{`${vendor.vendorName} (${vendor.vendorID})`}}
+        </option>
+      </select>
+      <select v-model="selectedReviewPeriod">
+        <option
+          v-for="(reviewPeriod) in reviewPeriods"
+          v-bind:key="reviewPeriod"
+          v-bind:value="reviewPeriod"
+        >
+          {{reviewPeriod}}
+        </option>
+      </select>
+
       <div class="page-contents-row">
         <button
           v-bind:class="{ currentTab: question.questionID === currentQuestion }"
@@ -18,8 +37,8 @@
           v-bind:key="question.questionID"
           v-bind:question="question"
           v-bind:currentQuestion="currentQuestion"
-          v-bind:vendorID="vendorID"
-          v-bind:reviewID="reviewID"
+          v-bind:vendorID="selectedVendorID"
+          v-bind:reviewPeriod="selectedReviewPeriod"
           v-on:save-question="saveQuestion($event)"
         />
       </template>
@@ -36,8 +55,10 @@ export default {
       review: {},
       reviewLoaded: false,
       currentQuestion: 1,
-      vendorID: 123456,
-      reviewID: 123456,
+      allVendors: [],
+      reviewPeriods: [],
+      selectedVendorID: 0,
+      selectedReviewPeriod: '',
     };
   },
   methods: {
@@ -54,8 +75,8 @@ export default {
       };
 
       this.$store.dispatch('updateAnswer', {
-        vendorID: this.vendorID,
-        reviewID: this.reviewID,
+        vendorID: this.selectedVendorID,
+        reviewPeriod: this.selectedReviewPeriod,
         completeAnswer: completeAnswer,
       });
     },
@@ -63,7 +84,13 @@ export default {
       return this.review.questions.find(question => question.questionID === questionID);
     },
   },
-  mounted() {
+  async mounted() {
+    await this.$store.dispatch('populateAllVendors');
+    this.allVendors = this.$store.getters.getAllVendors;
+
+    await this.$store.dispatch('populatereviewPeriods');
+    this.reviewPeriods = this.$store.getters.getreviewPeriods;
+
     this.$axios
       .get('/review', {})
       .then(response => {
@@ -73,6 +100,14 @@ export default {
       .catch(error => {
         console.log(error);
       });
+  },
+  watch: {
+    selectedReviewPeriod() {
+      const previousReview = this.$store.getters.getReviewByPeriod({
+        vendorID: this.selectedVendorID,
+        reviewPeriod: this.selectedReviewPeriod,
+      });
+    },
   },
   components: {
     Question,

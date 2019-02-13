@@ -3,6 +3,7 @@
     <h3 style="text-align: center;" id="nav">
       <router-link v-bind:class="{ bold: routeName('dashboard') }" v-if="loggedIn()" to="/dashboard">Dashboard</router-link>
       <router-link v-bind:class="{ bold: routeName('review') }" v-if="loggedIn()" to="/review"> | Review</router-link>
+      <router-link v-bind:class="{ bold: routeName('summary') }" v-if="loggedIn()" to="/summary"> | Summary</router-link>
       <router-link v-bind:class="{ bold: routeName('logout') }" v-if="loggedIn()" to="/logout"> | Logout</router-link>
     </h3>
     <router-view/>
